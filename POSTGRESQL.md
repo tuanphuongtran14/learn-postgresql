@@ -332,9 +332,9 @@ A sequence in PostgreSQL is a user-defined schema-bound object that generates a 
 ```
   SELECT
     relname sequence_name
-  FROM 
-    pg_class 
-  WHERE 
+  FROM
+    pg_class
+  WHERE
     relkind = 'S';
 ```
 
@@ -346,7 +346,7 @@ A sequence in PostgreSQL is a user-defined schema-bound object that generates a 
 
 # Truncate table (delete all data of the table)
 
-- Syntax: 
+- Syntax:
 
 ```
   TRUNCATE [ TABLE ] [ ONLY ] <table_name> [ * ] [, ... ]
@@ -357,7 +357,7 @@ A sequence in PostgreSQL is a user-defined schema-bound object that generates a 
 
 - **RESTART IDENTIT** restart sequence column value.
 
-- **CONTINUE IDENTITY** not restart sequence column value. 
+- **CONTINUE IDENTITY** not restart sequence column value.
 
 # PostgreSQL Constraints
 
@@ -369,7 +369,7 @@ A sequence in PostgreSQL is a user-defined schema-bound object that generates a 
 
 ### Define the primary key
 
-There are two way to define the primary key:  
+There are two way to define the primary key:
 
 - The first way: define the primary key while creating the table.
 
@@ -382,7 +382,7 @@ There are two way to define the primary key:
     updated_at timestamp without time zone,
     deleted_at timestamp without time zone
   )
-  
+
   -- Or create by using CONSTRAINT keyword:
 
   CREATE TABLE public.groups
@@ -399,7 +399,7 @@ There are two way to define the primary key:
 
   CREATE TABLE product (
     product_no INTEGER,
-    item_no INTEGER,   
+    item_no INTEGER,
     qty INTEGER,
     price NUMERIC,
     PRIMARY KEY (product_no, item_no)
@@ -429,15 +429,15 @@ To remove the primary key from the table, we use the following syntax:
 
 ## What is the foreign key?
 
-A foreign key is a column or a group of columns in a table that reference the primary key of another table.  
+A foreign key is a column or a group of columns in a table that reference the primary key of another table.
 
-The table that contains the foreign key is called the referencing table or child table. And the table referenced by the foreign key is called the referenced table or parent table.  
+The table that contains the foreign key is called the referencing table or child table. And the table referenced by the foreign key is called the referenced table or parent table.
 
-A table can have multiple foreign keys depending on its relationships with other tables.  
+A table can have multiple foreign keys depending on its relationships with other tables.
 
-In PostgreSQL, you define a foreign key using the foreign key constraint. The foreign key constraint helps maintain the referential integrity of data between the child and parent tables.  
+In PostgreSQL, you define a foreign key using the foreign key constraint. The foreign key constraint helps maintain the referential integrity of data between the child and parent tables.
 
-A foreign key constraint indicates that values in a column or a group of columns in the child table equal the values in a column or a group of columns of the parent table.  
+A foreign key constraint indicates that values in a column or a group of columns in the child table equal the values in a column or a group of columns of the parent table.
 
 ## Define the foreign key
 
@@ -602,3 +602,528 @@ There are two way to define the foreign key:
   ALTER TABLE users
   ADD CONSTRAINT unique_email UNIQUE(email);
 ```
+
+# SQL Query Sentences
+
+## Select Query
+
+**Syntax:**
+
+```
+  [ WITH [ RECURSIVE ] with_query [, ...] ]
+  SELECT [ ALL | DISTINCT [ ON ( expression [, ...] ) ] ]
+  [ * | expression [ [ AS ] output_name ] [, ...] ]
+  [ FROM from_item [, ...] ]
+  [ WHERE condition ]
+  [ GROUP BY grouping_element [, ...] ]
+  [ HAVING condition [, ...] ]
+  [ WINDOW window_name AS ( window_definition ) [, ...] ]
+  [ { UNION | INTERSECT | EXCEPT } [ ALL | DISTINCT ] select ]
+  [ ORDER BY expression [ ASC | DESC | USING operator ] [ NULLS { FIRST | LAST } ] [, ...] ]
+  [ LIMIT { count | ALL } ]
+  [ OFFSET start [ ROW | ROWS ] ]
+  [ FETCH { FIRST | NEXT } [ count ] { ROW | ROWS } ONLY ]
+  [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF table_name [, ...] ] [ NOWAIT | SKIP LOCKED ] [...] ]
+```
+
+**Note:**
+
+- It is not a good practice to use the asterisk (\*) in the SELECT statement when you embed SQL statements in the application code like *Python, Java, Node.js, or PHP* due to the following reasons:
+
+  ...1. *Database performance.* Suppose you have a table with many columns and a lot of data, the SELECT statement with the asterisk (\*) shorthand will select data from all the columns of the table, which may not be necessary to the application.
+
+  ...2. *Application performance.* Retrieving unnecessary data from the database increases the traffic between the database server and application server. In consequence, your applications may be slower to respond and less scalable.
+
+- PostgreSQL evaluates the FROM clause before the SELECT clause n the SELECT statement.
+
+```
+  FROM => SELECT
+```
+
+- PostgreSQL evaluates the clauses in the SELECT statement in the following order: FROM, SELECT, and ORDER BY.
+
+```
+  FROM => SELECT => ORDER BY
+```
+
+- PostgreSQL evaluates the WHERE clause after the FROM clause and before the SELECT and ORDER BY clause:
+
+```
+  FROM => WHERE => SELECT => ORDER BY
+```
+
+**Get more details at here:** [https://www.postgresqltutorial.com/postgresql-select/](https://www.postgresqltutorial.com/postgresql-select/)
+
+# PostgreSQL Column Aliases
+
+A column alias allows you to assign a column or an expression in the select list of a SELECT statement a temporary name. The column alias exists temporarily during the execution of the query.  
+
+The following illustrates the syntax of using a column alias:  
+
+```
+  SELECT column_name AS alias_name
+  FROM table_name;
+
+  -- Or
+
+  SELECT column_name alias_name
+  FROM table_name;
+
+  -- Or we can use alias name to an expression
+
+  SELECT expression AS alias_name
+  FROM table_name;
+```
+
+**Example:**
+
+```
+  -- Show full name based on first name and last name
+  SELECT first_name || ' ' || last_name AS full_name FROM employee
+```
+
+# PostgreSQL FETCH clause
+
+To constrain the number of rows returned by a query, you often use the LIMIT clause. The LIMIT clause is widely used by many relational database management systems such as MySQL, H2, and HSQLDB. However, the LIMIT clause is not a SQL-standard.  
+
+To conform with the SQL standard, PostgreSQL supports the FETCH clause to retrieve a number of rows returned by a query. Note that the FETCH clause was introduced in SQL: 2008.  
+
+**Syntax:**
+
+```
+  OFFSET start { ROW | ROWS }
+  FETCH { FIRST | NEXT } [ row_count ] { ROW | ROWS } ONLY
+```
+
+- ROW is the synonym for ROWS, FIRST is the synonym for NEXT . SO you can use them interchangeably
+
+- The start is an integer that must be zero or positive. By default, it is zero if the OFFSET clause is not specified. In case the start is greater than the number of rows in the result set, no rows are returned;
+
+- The row_count is 1 or greater. By default, the default value of row_count is 1 if you do not specify it explicitly.
+
+**Example**
+
+```
+  SELECT * FROM employee FETCH FIRST 2 ROWS ONLY
+```
+**Note:**
+
+> *The FETCH clause is functionally equivalent to the LIMIT clause. If you plan to make your application compatible with other database systems, you should use the FETCH clause because it follows the standard SQL.*
+
+
+# PostgreSQL LIKE and NOT LIKE operator
+
+You construct a pattern by combining literal values with wildcard characters and use the LIKE or NOT LIKE operator to find the matches. PostgreSQL provides you with two wildcards:
+
+- Percent sign (%) matches any sequence of zero or more characters.
+
+- Underscore sign (_)  matches any single character.
+
+**Example:**
+
+```
+  SELECT
+    'foo' LIKE 'foo', -- true
+    'foo' LIKE 'f%', -- true
+    'foo' LIKE '_o_', -- true
+    'bar' LIKE 'b_'; -- false
+
+  SELECT
+    'foo' NOT LIKE 'foo', -- false
+    'foo' NOT LIKE 'f%', -- false
+    'foo' NOT LIKE '_o_', -- false
+    'bar' NOT LIKE 'b_'; -- true
+```
+
+# PostgreSQL Joins
+
+## Setting up sample tables
+
+```
+  CREATE TABLE basket_a (
+      a INT PRIMARY KEY,
+      fruit_a VARCHAR (100) NOT NULL
+  );
+
+  CREATE TABLE basket_b (
+      b INT PRIMARY KEY,
+      fruit_b VARCHAR (100) NOT NULL
+  );
+
+  INSERT INTO basket_a (a, fruit_a)
+  VALUES
+      (1, 'Apple'),
+      (2, 'Orange'),
+      (3, 'Banana'),
+      (4, 'Cucumber');
+
+  INSERT INTO basket_b (b, fruit_b)
+  VALUES
+      (1, 'Orange'),
+      (2, 'Apple'),
+      (3, 'Watermelon'),
+      (4, 'Pear');
+```
+
+## PostgreSQL inner join
+
+The following statement joins the first table (basket_a) with the second table (basket_b) by matching the values in the fruit_a and fruit_b columns:
+
+```
+  SELECT
+    a,
+    fruit_a,
+    b,
+    fruit_b
+  FROM
+    basket_a
+  INNER JOIN basket_b
+    ON fruit_a = fruit_b;
+```
+
+**Important:**
+
+> *The inner join examines each row in the first table (basket_a). It compares the value in the fruit_a column with the value in the fruit_b column of each row in the second table (basket_b). If these values are equal, the inner join creates a new row that contains columns from both tables and adds this new row the result set.*
+
+
+## PostgreSQL left join
+
+The following statement uses the left join clause to join the basket_a table with the basket_b table. In the left join context, the first table is called the left table and the second table is called the right table.  
+
+```
+  SELECT
+      a,
+      fruit_a,
+      b,
+      fruit_b
+  FROM
+      basket_a
+  LEFT JOIN basket_b 
+    ON fruit_a = fruit_b;
+```
+
+**Important**
+
+> *The left join starts selecting data from the left table. It compares values in the fruit_a column with the values in the fruit_b column in the basket_b table.*  
+
+> *If these values are equal, the left join creates a new row that contains columns of both tables and adds this new row to the result set.*
+
+> **In case the values do not equal, the left join also creates a new row that contains columns from both tables and adds it to the result set. However, it fills the columns of the right table (basket_b) with null.*
+
+**Note:**
+
+> *The LEFT JOIN is the same as the LEFT OUTER JOIN so you can use them interchangeably.* 
+
+## PostgreSQL right join
+
+The following statement uses the right join clause to join the basket_a table with the basket_b table. In the right join context, the first table is called the left table and the second table is called the right table.  
+
+```
+  SELECT
+    a,
+    fruit_a,
+    b,
+    fruit_b
+  FROM
+      basket_a
+  RIGHT JOIN basket_b ON fruit_a = fruit_b;
+```
+
+**Important**
+
+> *The right join is a reversed version of the left join. The right join starts selecting data from the right table. It compares each value in the fruit_b column of every row in the right table with each value in the fruit_a column of every row in the fruit_a table.*
+
+> *If these values are equal, the right join creates a new row that contains columns from both tables.*
+
+> *In case these values are not equal, the right join also creates a new row that contains columns from both tables. However, it fills the columns in the left table with NULL.*
+
+**Note:**
+
+> *The RIGHT JOIN is the same as the RIGHT OUTER JOIN so you can use them interchangeably.*  
+
+## PostgreSQL full outer join
+
+> *The full outer join or full join returns a result set that contains all rows from both left and right tables, with the matching rows from both sides if available. In case there is no match, the columns of the table will be filled with NULL.*
+
+```
+  SELECT
+    a,
+    fruit_a,
+    b,
+    fruit_b
+  FROM
+    basket_a
+  FULL OUTER JOIN basket_b 
+    ON fruit_a = fruit_b;
+```
+
+## PostgreSQL cross join
+
+A CROSS JOIN clause allows you to produce a Cartesian Product of rows in two or more tables.  
+
+Different from other join clauses such as LEFT JOIN  or INNER JOIN, the CROSS JOIN clause does not have a join predicate.  
+
+**Syntax**
+
+```
+  SELECT select_list
+  FROM T1
+  CROSS JOIN T2;
+
+  -- Or
+
+  SELECT select_list
+  FROM T1, T2;
+
+  -- Or 
+
+  SELECT *
+  FROM T1
+  INNER JOIN T2 ON true;
+```
+
+## PostgreSQL natural join
+
+A natural join is a join that creates an implicit join based on the same column names in the joined tables.
+
+**Syntax**
+
+```
+  SELECT select_list
+  FROM T1
+  NATURAL [INNER, LEFT, RIGHT] JOIN T2;
+```
+
+A natural join can be an inner join, left join, or right join. If you do not specify a join explicitly e.g., INNER JOIN, LEFT JOIN, RIGHT JOIN, PostgreSQL will use the INNER JOIN by default.
+
+If you use the asterisk (*) in the select list, the result will contain the following columns:
+
+- All the common columns, which are the columns from both tables that have the same name.
+
+- Every column from both tables, which is not a common column.
+
+# PostgreSQL GROUP BY
+
+The GROUP BY clause divides the rows returned from the SELECT statement into groups. For each group, you can apply an aggregate function e.g.,  SUM() to calculate the sum of items or COUNT() to get the number of items in the groups.  
+
+The following statement illustrates the basic syntax of the GROUP BY clause:  
+
+```
+  SELECT 
+    column_1, 
+    column_2,
+    ...,
+    aggregate_function(column_3)
+  FROM 
+    table_name
+  GROUP BY 
+    column_1,
+    column_2,
+    ...;
+```
+
+In this syntax:  
+
+- First, select the columns that you want to group e.g., column1 and column2, and column that you want to apply an aggregate function (column3).
+
+- Second, list the columns that you want to group in the GROUP BY clause.
+
+The statement clause divides the rows by the values of the columns specified in the GROUP BY clause and calculates a value for each group.
+
+**Note:**
+
+> *PostgreSQL evaluates the GROUP BY clause after the FROM and WHERE clauses and before the HAVING SELECT, DISTINCT, ORDER BY and LIMIT clauses.*
+
+```
+  FROM => WHERE => GROUP BY => HAVING => SELECT => DISTINCT => ORDER BY => LIMIT
+```
+
+# PostgreSQL UNION operator
+
+The UNION operator combines result sets of two or more SELECT statements into a single result set.  
+
+**Syntax**
+
+```
+  SELECT select_list_1
+  FROM table_expresssion_1
+  UNION
+  SELECT select_list_2
+  FROM table_expression_2
+```
+
+**Note**
+
+To combine the result sets of two queries using the UNION operator, the queries must conform to the following rules:
+
+- The number and the order of the columns in the select list of both queries must be the same.
+
+- The data types must be compatible.
+
+The UNION operator removes all duplicate rows from the combined data set. To retain the duplicate rows, you use the the UNION ALL instead.
+
+# PostgreSQL INTERSECT operator
+
+Like the UNION and EXCEPT operators, the PostgreSQL INTERSECT operator combines result sets of two or more SELECT statements into a single result set.  
+
+The INTERSECT operator returns any rows that are available in both result sets.
+
+**Syntax:**
+
+```
+  SELECT select_list
+  FROM A
+  INTERSECT
+  SELECT select_list
+  FROM B;
+```
+
+**Note:**
+
+To use the INTERSECT operator, the columns that appear in the SELECT statements must follow the following rules:
+
+- The number of columns and their order in the SELECT clauses must be the same.
+
+- The data types of the columns must be compatible.
+
+# PostgreSQL EXCEPT operator
+
+Like the UNION and INTERSECT operators, the EXCEPT operator returns rows by comparing the result sets of two or more queries.  
+
+The EXCEPT operator returns distinct rows from the first (left) query that are not in the output of the second (right) query.  
+
+**Syntax:**
+
+```
+  SELECT select_list
+  FROM A
+  EXCEPT 
+  SELECT select_list
+  FROM B;
+```
+
+**Note:**
+
+The queries that involve in the EXCEPT need to follow these rules:
+
+- The number of columns and their orders must be the same in the two queries.
+
+- The data types of the respective columns must be compatible.
+
+# PostgreSQL GROUPING SETS
+
+## GROUPING SETS operator
+
+The GROUPING SETS allows you to define multiple grouping sets in the same query.  
+
+The general syntax of the GROUPING SETS is as follows:  
+
+```
+  SELECT
+      c1,
+      c2,
+      aggregate_function(c3)
+  FROM
+      table_name
+  GROUP BY
+      GROUPING SETS (
+          (c1, c2),
+          (c1),
+          (c2),
+          ()
+  );
+```
+
+## GROUPING function
+
+The GROUPING() function accepts an argument which can be a column name or an expression:  
+
+```
+GROUPING( column_name | expression)
+```
+
+The column_name or expression must match with the one specified in the GROUP BY clause.  
+
+The GROUPING() function returns bit 0 if the argument is a member of the current grouping set and 1 otherwise.  
+
+# PostgreSQL CUBE
+
+PostgreSQL CUBE is a subclause of the GROUP BY clause. The CUBE allows you to generate multiple grouping sets.  
+
+A grouping set is a set of columns to which you want to group. For more information on the grouping sets, check it out the GROUPING SETS tutorial.  
+
+The following illustrates the syntax of the CUBE subclause:
+
+```
+  SELECT
+    c1,
+    c2,
+    c3,
+    aggregate (c4)
+  FROM
+    table_name
+  GROUP BY
+    CUBE (c1, c2, c3);
+```
+
+**In this syntax:**
+
+- First, specify the CUBE subclause in the the GROUP BY clause of the SELECT statement.
+
+- Second, in the select list, specify the columns (dimensions or dimension columns) which you want to analyze and aggregation function expressions.
+
+- Third, in the GROUP BY clause, specify the dimension columns within the parentheses of the CUBE subclause.
+
+**Important:**  
+
+The query generates all possible grouping sets based on the dimension columns specified in CUBE. The CUBE subclause is a short way to define multiple grouping sets so the following are equivalent:  
+
+```
+CUBE(c1,c2,c3) 
+
+GROUPING SETS (
+  (c1,c2,c3), 
+  (c1,c2),
+  (c1,c3),
+  (c2,c3),
+  (c1),
+  (c2),
+  (c3), 
+  ()
+ ) 
+```
+
+In general, if the number of columns specified in the CUBE is n, then you will have 2^n combinations.
+
+# PostgreSQL ROLLUP
+
+The PostgreSQL ROLLUP is a subclause of the GROUP BY clause that offers a shorthand for defining multiple grouping sets. A grouping set is a set of columns by which you group. Check out the grouping sets tutorial for the detailed information.  
+
+Different from the CUBE subclause, ROLLUP does not generate all possible grouping sets based on the specified columns. It just makes a subset of those.  
+
+The ROLLUP assumes a hierarchy among the input columns and generates all grouping sets that make sense considering the hierarchy. This is the reason why ROLLUP is often used to generate the subtotals and the grand total for reports.  
+
+For example, the CUBE (c1,c2,c3) makes all eight possible grouping sets:  
+
+```
+  (c1, c2, c3)
+  (c1, c2)
+  (c2, c3)
+  (c1,c3)
+  (c1)
+  (c2)
+  (c3)
+  ()
+```
+
+However, the ROLLUP(c1,c2,c3) generates only four grouping sets, assuming the hierarchy c1 > c2 > c3 as follows:  
+
+```
+  (c1, c2, c3)
+  (c1, c2)
+  (c1)
+  ()
+```
+
+A common use of  ROLLUP is to calculate the aggregations of data by year, month, and date, considering the hierarchy year > month > date.  
+

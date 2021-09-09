@@ -1,3 +1,7 @@
 # docker postgreSQL and pgadmin folder
 data/
 pgadmin/
+
+# general
+node_modules/
+*.env
