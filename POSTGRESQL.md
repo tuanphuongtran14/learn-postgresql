@@ -359,4 +359,246 @@ A sequence in PostgreSQL is a user-defined schema-bound object that generates a 
 
 - **CONTINUE IDENTITY** not restart sequence column value. 
 
+# PostgreSQL Constraints
 
+## Primary key
+
+### What is the primary key?
+
+- A primary key is a column or group of columns used to uniquely identify a row in a table.
+
+### Define the primary key
+
+There are two way to define the primary key:  
+
+- The first way: define the primary key while creating the table.
+
+```
+  CREATE TABLE public.groups
+  (
+    group_id integer NOT NULL PRIMARY KEY,
+    group_name character varying COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone,
+    deleted_at timestamp without time zone
+  )
+  
+  -- Or create by using CONSTRAINT keyword:
+
+  CREATE TABLE public.groups
+  (
+    group_id integer NOT NULL,
+    group_name character varying COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone,
+    deleted_at timestamp without time zone,
+    CONSTRAINT groups_pkey PRIMARY KEY (group_id)
+  )
+
+  -- Or just like below:
+
+  CREATE TABLE product (
+    product_no INTEGER,
+    item_no INTEGER,   
+    qty INTEGER,
+    price NUMERIC,
+    PRIMARY KEY (product_no, item_no)
+  );
+```
+
+- The second ways: define/add the primary key after define the table by using ALTER TABLE keywords.
+
+```
+  CREATE TABLE products (
+    product_no_1 INTEGER,
+    product_no_2 INTEGER,
+    description TEXT
+  );
+  ALTER TABLE public.products ADD PRIMARY KEY (product_no_1, product_no_2);
+```
+
+## Remove the primary key
+
+To remove the primary key from the table, we use the following syntax:
+
+```
+  ALTER TABLE table_name DROP CONSTRAINT primary_key_constraint;
+```
+
+# Foreign Key Constraint
+
+## What is the foreign key?
+
+A foreign key is a column or a group of columns in a table that reference the primary key of another table.  
+
+The table that contains the foreign key is called the referencing table or child table. And the table referenced by the foreign key is called the referenced table or parent table.  
+
+A table can have multiple foreign keys depending on its relationships with other tables.  
+
+In PostgreSQL, you define a foreign key using the foreign key constraint. The foreign key constraint helps maintain the referential integrity of data between the child and parent tables.  
+
+A foreign key constraint indicates that values in a column or a group of columns in the child table equal the values in a column or a group of columns of the parent table.  
+
+## Define the foreign key
+
+There are two way to define the foreign key:
+
+- The first way: define the foreign key while creating the table
+
+**Syntax**
+
+```
+  CREATE TABLE <table_name_1> (
+    <column_name_1> <data_type> REFERENCES <table_name_2>(<column_name_2>),
+  );
+```
+
+```
+  CREATE TABLE public.users
+  (
+    user_id integer NOT NULL,
+    group_id integer REFERENCES groups(group_id),
+    username character varying COLLATE pg_catalog."default" NOT NULL,
+    password character varying COLLATE pg_catalog."default" NOT NULL,
+    email character varying COLLATE pg_catalog."default",
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone,
+    deleted_at timestamp without time zone
+  );
+
+  -- Or using the FOREIGN KEY keyword
+
+  CREATE TABLE public.users
+  (
+    user_id integer NOT NULL,
+    group_id integer NOT NULL,
+    username character varying COLLATE pg_catalog."default" NOT NULL,
+    password character varying COLLATE pg_catalog."default" NOT NULL,
+    email character varying COLLATE pg_catalog."default",
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone,
+    deleted_at timestamp without time zone,
+    FOREIGN KEY (group_id) REFERENCES groups(group_id)
+  )
+```
+
+- The second ways: define/add the foreign key after define the table by using ALTER TABLE keywords.
+
+**Note:**
+
+```
+  ALTER TABLE child_table
+  ADD CONSTRAINT constraint_name FOREIGN KEY (child_column_1) REFERENCES parent_table (parent_column_1);
+```
+
+```
+  ALTER TABLE employee ADD CONSTRAINT fk_group_id FOREIGN KEY (group_id) REFERENCES groups(group_id);
+```
+
+# Other constraints
+
+## Check constraints
+
+**Syntax:**
+
+```
+  CREATE TABLE <table_name> (
+    <column_name> <data_type> CHECK (<check_condition>)
+  );
+
+  -- Or using the CONSTRAINT keyword
+
+  CREATE TABLE <table_name> (
+    <column_name> <data_type> CONSTRAINT <constraint_name> CHECK (<check_condition>)
+  );
+
+  -- Or add check constraint to the exist table
+
+  ALTER TABLE <table_name> ADD CONSTRAINT <constraint_name> CHECK (
+    <check_condition>
+  );
+```
+
+**Example:**
+
+```
+  CREATE TABLE employees (
+    employee_id serial PRIMARY KEY,
+    fullname character varying,
+    salary numeric CHECK(salary > 0),
+    age smallint CONSTRAINT check_min_age CHECK (age > 18),
+  );
+
+  ALTER TABLE employees
+  ADD CONSTRAINT check_max_age CHECK (age < 80);
+```
+
+## Not null constraints
+
+**Syntax:**
+
+```
+  CREATE TABLE <table_name> (
+    <column_name> <data_type> NOT NULL
+  );
+
+  -- Or add not nul constraint to the exist table
+
+  ALTER TABLE table_name
+  ALTER COLUMN column_name SET NOT NULL;
+```
+
+**Example:**
+
+```
+  CREATE TABLE cars
+  (
+    car_id serial NOT NULL PRIMARY KEY,
+    name character varying NOT NULL,
+    description text
+  )
+
+  ALTER TABLE cars
+  ALTER COLUMN description SET NOT NULL;
+```
+
+## Unique constraints
+
+**Syntax:**
+
+```
+  CREATE TABLE <table_name> (
+    <column_name> <data_type> UNIQUE
+  );
+
+  -- Or add unique constraint for many columns
+
+  CREATE TABLE <table_name> (
+    <column_name_1> <data_type>
+    <column_name_2> <data_type>
+    UNIQUE(column_name_1, column_name_2)
+  );
+
+  -- Or add unique constraint to the exist table
+
+  ALTER TABLE table_name
+  ADD CONSTRAINT constraint_name UNIQUE(column_name, ...)
+```
+
+**Example:**
+
+```
+  CREATE TABLE users
+  (
+    user_id serial NOT NULL PRIMARY KEY,
+    username character varying UNIQUE,
+    password character varying,
+    email character varying,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone,
+    deleted_at timestamp without time zone
+  );
+
+  ALTER TABLE users
+  ADD CONSTRAINT unique_email UNIQUE(email);
+```
